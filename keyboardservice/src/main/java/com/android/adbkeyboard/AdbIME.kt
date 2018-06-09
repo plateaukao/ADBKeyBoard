@@ -9,28 +9,23 @@ import android.view.KeyEvent
 import android.view.View
 
 class AdbIME : InputMethodService() {
-    private var mReceiver: BroadcastReceiver? = null
+    private var mReceiver: BroadcastReceiver = AdbReceiver()
 
-    override fun onCreateInputView(): View {
-        val mInputView = layoutInflater.inflate(R.layout.view, null)
-
-        if (mReceiver == null) {
-            mReceiver = AdbReceiver()
-            val filter = IntentFilter(IME_MESSAGE).apply {
-                addAction(IME_CHARS)
-                addAction(IME_KEYCODE)
-                addAction(IME_EDITOR_CODE)
-            }
-            registerReceiver(mReceiver, filter)
+    override fun onCreate() {
+        super.onCreate()
+        val filter = IntentFilter(IME_MESSAGE).apply {
+            addAction(IME_CHARS)
+            addAction(IME_KEYCODE)
+            addAction(IME_EDITOR_CODE)
         }
-
-        return mInputView
+        registerReceiver(mReceiver, filter)
     }
 
-    override fun onDestroy() {
-        mReceiver?.let { unregisterReceiver(it) }
-        super.onDestroy()
-    }
+    override fun onCreateInputView(): View =
+            layoutInflater.inflate(R.layout.view, null)
+
+    override fun onDestroy() =
+        unregisterReceiver(mReceiver)
 
     internal inner class AdbReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
